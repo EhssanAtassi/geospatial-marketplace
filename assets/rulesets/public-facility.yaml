@@ -1,0 +1,127 @@
+# Built-in ruleset: public facility siting (hospital, school, civic center)
+#
+# Loaded by /gis-to-db:analyze-site --purpose public-facility
+
+name: public-facility
+description: >
+  Public facility siting — hospital, school, community center, library, government office.
+  Prioritizes population coverage, accessibility, and equitable distribution.
+
+verdict_thresholds:
+  recommended: 70
+  conditional: 50
+
+criteria:
+
+  - name: population_coverage
+    weight: 25
+    type: density_count
+    layer: osm:building=residential|apartments|house
+    radius_km: 5
+    score_curve: linear_increasing
+    bounds:
+      unacceptable: 0
+      acceptable: 500
+      ideal: 5000
+    description: >
+      Public facilities serve people. Higher residential building density within
+      5km drive radius means more residents served per facility.
+
+  - name: road_accessibility
+    weight: 20
+    type: distance_to_layer
+    layer: osm:highway=motorway|trunk|primary|secondary|tertiary
+    score_curve: linear_decreasing
+    bounds:
+      ideal: 0.1
+      acceptable: 2
+      unacceptable: 10
+    units: km
+    description: >
+      Emergency response time + general access. Direct road access is ideal;
+      >2km from any road is unacceptable for hospital / school siting.
+
+  - name: terrain_for_buildings
+    weight: 10
+    type: terrain_stat
+    stat: average_slope_degrees
+    score_curve: linear_decreasing
+    bounds:
+      ideal: 0
+      acceptable: 8
+      unacceptable: 20
+    description: Construction-friendly slope. Helipads (hospitals) need very flat zones.
+
+  - name: distance_to_other_facilities
+    weight: 10
+    type: distance_to_layer
+    layer: osm:amenity=hospital|school|community_centre
+    score_curve: bell
+    bounds:
+      min: 0       # right next to existing facility = redundant coverage
+      ideal: 3
+      max: 15      # too far from other facilities = isolated
+    units: km
+    description: >
+      Spatial equity. Building right next to an existing facility wastes
+      coverage; building too far isolates the service from the existing network.
+
+  - name: protected_area_conflict
+    weight: 10
+    type: overlap_with_layer
+    layer: natural_earth:protected_areas
+    score:
+      no_overlap: 100
+      partial_overlap: 30
+      full_overlap: 0
+
+  - name: flood_risk
+    weight: 10
+    type: terrain_stat
+    stat: elevation_meters
+    score_curve: linear_increasing
+    bounds:
+      unacceptable: 0
+      acceptable: 50
+      ideal: 300
+    description: >
+      Critical infrastructure must avoid flood zones. Hospitals especially —
+      flooded ICUs are catastrophic. Use real flood-zone GIS when available.
+
+  - name: distance_to_industrial
+    weight: 5
+    type: distance_to_layer
+    layer: osm:landuse=industrial
+    score_curve: linear_increasing
+    bounds:
+      unacceptable: 0
+      acceptable: 0.5
+      ideal: 2
+    units: km
+    description: >
+      Air-quality concerns for hospitals and schools. >2km from industrial is
+      comfortable.
+
+  - name: parking_terrain
+    weight: 5
+    type: terrain_stat
+    stat: contiguous_flat_area_hectares
+    flat_slope_threshold: 5
+    score_curve: linear_increasing
+    bounds:
+      unacceptable: 0
+      acceptable: 1
+      ideal: 3
+    description: Hospital / school parking lots need flat hectare-scale areas.
+
+  - name: distance_to_existing_residential
+    weight: 5
+    type: distance_to_layer
+    layer: osm:building=residential
+    score_curve: linear_decreasing
+    bounds:
+      ideal: 0.2
+      acceptable: 2
+      unacceptable: 10
+    units: km
+    description: Service population should be walking-distance / short-drive away.

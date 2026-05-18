@@ -1,0 +1,133 @@
+# Built-in ruleset: greenfield commercial airport siting
+#
+# Loaded by /gis-to-db:analyze-site --purpose airport
+#
+# Criteria reflect FAA / ICAO general guidance plus practical regional concerns.
+# Customize by copying this file to ~/.claude/gis-to-db/rulesets/airport.yaml
+# and editing weights/thresholds.
+
+name: airport
+description: Greenfield commercial airport siting — runway-capable site for fixed-wing operations.
+
+# Score thresholds for final verdict.
+verdict_thresholds:
+  recommended: 70    # >= this score → "RECOMMENDED"
+  conditional: 50    # >= this score → "CONDITIONAL" (but < recommended)
+                     # < conditional → "NOT RECOMMENDED"
+
+criteria:
+
+  # --- Terrain ---
+  - name: terrain_slope
+    weight: 20
+    type: terrain_stat
+    stat: max_slope_degrees
+    score_curve: linear_decreasing
+    bounds:
+      ideal: 0
+      acceptable: 2
+      unacceptable: 5
+    description: >
+      Runways require near-flat terrain. ICAO recommends <1.5% (0.86°) for code 4
+      runways. Sites above 5° require major earthworks and are typically rejected.
+
+  - name: usable_flat_area
+    weight: 15
+    type: terrain_stat
+    stat: contiguous_flat_area_hectares
+    flat_slope_threshold: 2
+    score_curve: linear_increasing
+    bounds:
+      unacceptable: 0
+      acceptable: 200
+      ideal: 500
+    description: >
+      A code-4 runway needs ~3km × 0.5km of buildable land; with apron, terminal,
+      taxiways, and safety clearances, ~500ha contiguous-flat is the comfortable
+      target. <200ha contiguous flat is generally insufficient.
+
+  # --- Accessibility ---
+  - name: distance_to_major_road
+    weight: 10
+    type: distance_to_layer
+    layer: osm:highway=motorway|trunk|primary
+    score_curve: linear_decreasing
+    bounds:
+      ideal: 2
+      acceptable: 15
+      unacceptable: 50
+    units: km
+    description: >
+      Passengers and cargo need road access. Within 2km of an arterial is ideal;
+      beyond 50km adds significant road-build cost.
+
+  - name: distance_to_nearest_city
+    weight: 10
+    type: distance_to_layer
+    layer: osm:place=city|town
+    score_curve: bell
+    bounds:
+      min: 15        # closer than this → noise / overflight conflicts
+      ideal: 30      # sweet spot
+      max: 80        # farther than this → impractical for passengers
+    units: km
+    description: >
+      Too close = noise + overflight + crash-risk conflicts with residential.
+      Too far = passengers won't use it. Sweet spot is 20–40km from city center.
+
+  # --- Conflicts ---
+  - name: protected_area_conflict
+    weight: 15
+    type: overlap_with_layer
+    layer: natural_earth:protected_areas
+    score:
+      no_overlap: 100
+      partial_overlap: 30
+      full_overlap: 0
+    description: >
+      Protected ecological areas are typically non-negotiable exclusions.
+      Partial overlap can sometimes be resolved by site-shift; full overlap blocks.
+
+  - name: existing_airport_proximity
+    weight: 15
+    type: distance_to_layer
+    layer: osm:aeroway=aerodrome
+    score_curve: linear_increasing
+    bounds:
+      unacceptable: 0
+      acceptable: 30
+      ideal: 80
+    units: km
+    description: >
+      Two airports within ~30km share contested airspace — ATC complexity,
+      reduced parallel operations. International best practice is >50km
+      separation for major commercial airports.
+
+  # --- Hazards ---
+  - name: flood_risk
+    weight: 10
+    type: terrain_stat
+    stat: elevation_meters
+    score_curve: linear_increasing
+    bounds:
+      unacceptable: 0       # at sea level → high flood risk without protection
+      acceptable: 100
+      ideal: 500
+    description: >
+      Elevation is a coarse proxy for flood risk in v0.1. Real flood-zone GIS
+      data overrides this when supplied by user (--data-dir layer:flood_zones).
+
+  # --- Infrastructure proximity ---
+  - name: distance_to_water
+    weight: 5
+    type: distance_to_layer
+    layer: osm:water=lake|river
+    score_curve: bell
+    bounds:
+      min: 1       # too close → bird-strike risk, drainage issues
+      ideal: 5
+      max: 30      # too far → utilities expensive
+    units: km
+    description: >
+      Water bodies attract birds (FOD risk) and complicate drainage. Sweet
+      spot: 3-10km — supports utilities without flock-attraction risk.

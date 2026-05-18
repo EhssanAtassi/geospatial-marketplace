@@ -1,0 +1,128 @@
+# Built-in ruleset: residential development siting
+#
+# Loaded by /gis-to-db:analyze-site --purpose residential
+
+name: residential
+description: Multi-unit residential development siting — apartments, housing tracts, mixed-use residential.
+
+verdict_thresholds:
+  recommended: 70
+  conditional: 50
+
+criteria:
+
+  - name: terrain_slope
+    weight: 15
+    type: terrain_stat
+    stat: average_slope_degrees
+    score_curve: linear_decreasing
+    bounds:
+      ideal: 0
+      acceptable: 10
+      unacceptable: 25
+    description: >
+      Buildable slope. Up to ~10° is workable with terracing; beyond 25° requires
+      special foundations and is generally cost-prohibitive for volume housing.
+
+  - name: distance_to_road
+    weight: 15
+    type: distance_to_layer
+    layer: osm:highway=motorway|trunk|primary|secondary|tertiary|residential
+    score_curve: linear_decreasing
+    bounds:
+      ideal: 0.1
+      acceptable: 2
+      unacceptable: 10
+    units: km
+    description: >
+      Residents need road access for cars, deliveries, emergency services.
+      On a public road is ideal; >2km adds significant access-road cost.
+
+  - name: distance_to_schools
+    weight: 10
+    type: distance_to_layer
+    layer: osm:amenity=school|kindergarten
+    score_curve: linear_decreasing
+    bounds:
+      ideal: 0.5
+      acceptable: 3
+      unacceptable: 10
+    units: km
+    description: >
+      Family-oriented residential needs schools nearby. Within walking distance
+      (0.5km) is ideal; >10km significantly reduces market appeal.
+
+  - name: distance_to_amenities
+    weight: 10
+    type: distance_to_layer
+    layer: osm:amenity=supermarket|pharmacy|clinic|restaurant
+    score_curve: linear_decreasing
+    bounds:
+      ideal: 0.5
+      acceptable: 2
+      unacceptable: 10
+    units: km
+    description: >
+      Day-to-day amenities. Walkability adds significant property value.
+
+  - name: distance_to_industrial
+    weight: 10
+    type: distance_to_layer
+    layer: osm:landuse=industrial
+    score_curve: linear_increasing
+    bounds:
+      unacceptable: 0       # adjacent industrial = pollution + noise = bad
+      acceptable: 1
+      ideal: 5
+    units: km
+    description: >
+      Industrial proximity hurts residential value (noise, pollution, traffic).
+      >5km is comfortable; adjacent industrial is a deal-breaker for most markets.
+
+  - name: protected_area_conflict
+    weight: 10
+    type: overlap_with_layer
+    layer: natural_earth:protected_areas
+    score:
+      no_overlap: 100
+      partial_overlap: 20
+      full_overlap: 0
+    description: Protected zones typically prohibit residential development.
+
+  - name: flood_risk
+    weight: 15
+    type: terrain_stat
+    stat: elevation_meters
+    score_curve: linear_increasing
+    bounds:
+      unacceptable: 0
+      acceptable: 50
+      ideal: 200
+    description: >
+      Flood-zone residential is high insurance risk + regulatory burden.
+      User-supplied flood-zone GIS overrides this when available.
+
+  - name: distance_to_hospital
+    weight: 5
+    type: distance_to_layer
+    layer: osm:amenity=hospital|clinic
+    score_curve: linear_decreasing
+    bounds:
+      ideal: 1
+      acceptable: 5
+      unacceptable: 20
+    units: km
+    description: Emergency medical access. Within 5km is acceptable; >20km hurts value.
+
+  - name: existing_residential_density
+    weight: 10
+    type: density_count
+    layer: osm:building=residential
+    radius_km: 2
+    score_curve: bell
+    bounds:
+      min: 0         # zero residential nearby → isolated, no community
+      ideal: 100     # established neighborhood
+      max: 2000      # over-saturated, no demand
+    description: >
+      Some existing residential nearby = established services; too many = saturated market.

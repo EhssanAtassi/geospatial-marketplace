@@ -39,7 +39,11 @@
         "./skills/convert",
         "./skills/make-cli",
         "./skills/scaffold-service",
-        "./skills/add-module"
+        "./skills/add-module",
+        "./skills/analyze-site",
+        "./skills/analyze-stats",
+        "./skills/analyze-patterns",
+        "./skills/analyze-diff"
       ]
     }
   ]

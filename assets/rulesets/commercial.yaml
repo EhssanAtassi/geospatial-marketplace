@@ -1,0 +1,124 @@
+# Built-in ruleset: commercial / mixed-use development siting
+#
+# Loaded by /gis-to-db:analyze-site --purpose commercial
+
+name: commercial
+description: Commercial or mixed-use development siting — retail, office, hospitality, mixed-use.
+
+verdict_thresholds:
+  recommended: 70
+  conditional: 50
+
+criteria:
+
+  - name: visibility_main_road
+    weight: 20
+    type: distance_to_layer
+    layer: osm:highway=motorway|trunk|primary|secondary
+    score_curve: linear_decreasing
+    bounds:
+      ideal: 0.05    # 50m — directly on the road
+      acceptable: 0.5
+      unacceptable: 3
+    units: km
+    description: >
+      Commercial success correlates with road visibility and accessibility.
+      "On the road" is the gold standard for retail.
+
+  - name: traffic_count_proxy
+    weight: 15
+    type: distance_to_layer
+    layer: osm:highway=motorway|trunk|primary
+    score_curve: linear_decreasing
+    bounds:
+      ideal: 0.05
+      acceptable: 1
+      unacceptable: 5
+    units: km
+    description: >
+      Without traffic count data, proximity to a major highway is the v0.1
+      proxy for foot/car traffic. Supply user data with actual traffic counts
+      to override.
+
+  - name: distance_to_population
+    weight: 15
+    type: distance_to_layer
+    layer: osm:place=city|town|suburb
+    score_curve: linear_decreasing
+    bounds:
+      ideal: 0.5
+      acceptable: 5
+      unacceptable: 20
+    units: km
+    description: >
+      Customer catchment. Commercial inside or adjacent to populated areas
+      captures local trade; remote sites only work for destination retail.
+
+  - name: parking_terrain
+    weight: 10
+    type: terrain_stat
+    stat: average_slope_degrees
+    score_curve: linear_decreasing
+    bounds:
+      ideal: 0
+      acceptable: 5
+      unacceptable: 15
+    description: >
+      Commercial needs flat ground for parking. Sloped sites force expensive
+      grading or terraced parking.
+
+  - name: competing_commercial_density
+    weight: 10
+    type: density_count
+    layer: osm:shop|amenity=mall|building=commercial
+    radius_km: 1
+    score_curve: bell
+    bounds:
+      min: 0         # no commercial nearby → isolated
+      ideal: 20      # established commercial corridor
+      max: 200       # over-saturated
+    description: >
+      Some adjacent commercial supports cluster effect; too much = direct competition.
+
+  - name: distance_to_industrial
+    weight: 5
+    type: distance_to_layer
+    layer: osm:landuse=industrial
+    score_curve: bell
+    bounds:
+      min: 0.5     # adjacent = noise/aesthetics hurt commercial
+      ideal: 2
+      max: 30
+    units: km
+    description: Some buffer from industrial is good; too far loses workforce traffic.
+
+  - name: protected_area_conflict
+    weight: 10
+    type: overlap_with_layer
+    layer: natural_earth:protected_areas
+    score:
+      no_overlap: 100
+      partial_overlap: 30
+      full_overlap: 0
+
+  - name: flood_risk
+    weight: 5
+    type: terrain_stat
+    stat: elevation_meters
+    score_curve: linear_increasing
+    bounds:
+      unacceptable: 0
+      acceptable: 30
+      ideal: 200
+
+  - name: distance_to_public_transport
+    weight: 10
+    type: distance_to_layer
+    layer: osm:public_transport=station|railway=station
+    score_curve: linear_decreasing
+    bounds:
+      ideal: 0.3
+      acceptable: 2
+      unacceptable: 10
+    units: km
+    description: Transit access drives foot traffic and reduces parking demand.

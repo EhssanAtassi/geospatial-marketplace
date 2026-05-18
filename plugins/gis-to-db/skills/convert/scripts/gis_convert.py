@@ -123,9 +123,21 @@ def read_fiona(path: Path, driver: str, layer: str | None) -> Iterable[dict[str,
 
     with fiona.open(str(path), layer=layer, driver=driver) as src:
         for feature in src:
+            # fiona >= 1.10 returns fiona.Geometry / fiona.Properties wrappers
+            # instead of plain dicts. Normalize so downstream json.dumps() and
+            # dict iteration work for both legacy and current fiona releases.
+            geom = feature["geometry"]
+            if geom is not None and not isinstance(geom, dict):
+                geom = (
+                    dict(geom.__geo_interface__)
+                    if hasattr(geom, "__geo_interface__")
+                    else dict(geom)
+                )
+            props = feature["properties"]
+            props_dict = dict(props) if props else {}
             yield {
-                "geometry": feature["geometry"],
-                "properties": dict(feature["properties"]),
+                "geometry": geom,
+                "properties": props_dict,
                 "source_crs": src.crs,
             }
 
@@ -229,11 +241,18 @@ def read_dwg(path: Path, layer_filter: str | None) -> Iterable[dict[str, Any]]:
 
 
 def reproject_geometry(
-    geom_geojson: dict[str, Any],
+    geom_geojson: dict[str, Any] | None,
     source_crs: Any,
     target_srid: int,
-) -> dict[str, Any]:
-    """Reproject a GeoJSON-shaped geometry from source_crs to EPSG:<target_srid>."""
+) -> dict[str, Any] | None:
+    """Reproject a GeoJSON-shaped geometry from source_crs to EPSG:<target_srid>.
+
+    Returns None unchanged for features with null geometry — these are valid
+    in OGR/fiona data (an "attribute-only" row) and must not crash the
+    reprojection pipeline.
+    """
+    if geom_geojson is None:
+        return None
     if not source_crs:
         return geom_geojson
     try:
@@ -243,11 +262,21 @@ def reproject_geometry(
     except ImportError as exc:
         raise RuntimeError(f"pyproj/shapely required: {exc}") from exc
 
-    src_str = (
-        source_crs if isinstance(source_crs, str) else source_crs
-    )
+    # Normalize source_crs to something pyproj's Transformer accepts unambiguously.
+    # fiona 1.10 returns CRS objects, fiona <1.10 returned dicts, callers may
+    # also pass plain "EPSG:N" strings. Convert each form to a WKT or EPSG string.
+    if isinstance(source_crs, str):
+        src_for_pyproj: Any = source_crs
+    elif hasattr(source_crs, "to_wkt"):
+        src_for_pyproj = source_crs.to_wkt()
+    elif hasattr(source_crs, "to_string"):
+        src_for_pyproj = source_crs.to_string()
+    elif isinstance(source_crs, dict):
+        src_for_pyproj = source_crs.get("init") or str(source_crs)
+    else:
+        src_for_pyproj = str(source_crs)
     transformer = Transformer.from_crs(
-        src_str, f"EPSG:{target_srid}", always_xy=True
+        src_for_pyproj, f"EPSG:{target_srid}", always_xy=True
     )
     geom = shape(geom_geojson)
     new_geom = shapely_transform(transformer.transform, geom)
@@ -324,7 +353,7 @@ def format_postgis(
         for fname, ftype in attribute_schema.items():
             col_lines.append(f"  {_safe_ident(fname)} {_map_postgres_type(ftype)}")
         col_lines.append(f"  geom geometry(Geometry, {target_srid}) NOT NULL")
-        col_lines.append(f"  ,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()")
+        col_lines.append(f"  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()")
         yield f"CREATE TABLE IF NOT EXISTS {table} ("
         yield ",\n".join(col_lines)
         yield ");"
@@ -358,7 +387,7 @@ def format_mysql(
         for fname, ftype in attribute_schema.items():
             col_lines.append(f"  {_safe_ident(fname)} {_map_mysql_type(ftype)}")
         col_lines.append(f"  geom GEOMETRY NOT NULL SRID {target_srid}")
-        col_lines.append(f"  ,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+        col_lines.append(f"  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
         yield f"CREATE TABLE IF NOT EXISTS {table} ("
         yield ",\n".join(col_lines)
         yield ");"
@@ -415,8 +444,20 @@ def format_mongo(
 # ---------------------------------------------------------------------------
 
 
+def _normalize_fiona_base_type(base: str) -> str:
+    """fiona schema types come as 'int32', 'int64', 'int', 'float', 'float64',
+    'str', etc. Normalize to a small set ('int', 'float', 'str', ...) so the
+    type maps below match real-world inputs (Shapefile DBF fields commonly
+    arrive as 'int32:9' or 'float:19.11')."""
+    if base.startswith("int"):
+        return "int"
+    if base.startswith("float") or base.startswith("double"):
+        return "float"
+    return base
+
+
 def _map_postgres_type(fiona_type: str) -> str:
-    base = fiona_type.split(":")[0].lower()
+    base = _normalize_fiona_base_type(fiona_type.split(":")[0].lower())
     return {
         "str": "TEXT",
         "int": "BIGINT",
@@ -430,7 +471,7 @@ def _map_postgres_type(fiona_type: str) -> str:
 
 def _map_mysql_type(fiona_type: str) -> str:
     parts = fiona_type.split(":")
-    base = parts[0].lower()
+    base = _normalize_fiona_base_type(parts[0].lower())
     length = parts[1] if len(parts) > 1 else None
     if base == "str":
         return f"VARCHAR({length})" if length else "TEXT"

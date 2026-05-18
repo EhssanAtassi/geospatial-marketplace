@@ -25,7 +25,7 @@
       "name": "gis-to-db",
       "source": "./plugins/gis-to-db",
       "description": "Ingest GIS and CAD files (Shapefile, ESRI File Geodatabase, DWG, DXF) into PostGIS, MongoDB, or MySQL spatial. Scaffold full FastAPI services, generate one-shot CLIs, convert inline, or add a GIS-import feature to an existing app. Includes site-suitability analysis, descriptive statistics, spatial clustering, and before/after diff for GIS datasets.",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "category": "geospatial",
       "keywords": [
         "gis",

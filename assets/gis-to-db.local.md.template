@@ -1,0 +1,35 @@
+---
+# Per-project settings for the gis-to-db plugin.
+# Copy this file to `.claude/gis-to-db.local.md` in your project root and edit.
+# All fields are optional; sensible defaults are used when omitted.
+
+# Default SRID to reproject geometry into before storing.
+# 4326 = WGS84 (lat/lng) — standard for web mapping and MongoDB GeoJSON.
+target_srid: 4326
+
+# Default database target for `convert-inline` and `make-cli`.
+# Leave unset to be prompted each time. Allowed: postgis | mongo | mysql.
+default_db_target:
+
+# Connection URIs. The plugin reads these but never persists them anywhere else.
+# Add only the ones you use; the plugin asks per-invocation when unset.
+postgis_uri:
+mongo_uri:
+mysql_uri:
+
+# Docker fallback for hosts without GDAL/LibreDWG.
+prefer_docker: true
+docker_image: osgeo/gdal:ubuntu-small-3.8.0
+
+# DWG handling defaults — used to skip the prompt when the same value applies
+# to every drawing in this project (e.g. a real-estate project where every
+# DWG is in the same local UTM zone).
+default_source_crs:        # e.g. EPSG:32637
+default_layers:            # YAML list, e.g. [PARCELS, BUILDINGS]
+default_entity_types:      # YAML list, e.g. [LWPOLYLINE, POLYGON, CIRCLE]
+---
+
+# Project notes (free-form, ignored by the plugin)
+
+Add anything human-readable here — context about the data, source contacts,
+upstream system quirks. The plugin only reads the YAML frontmatter above.

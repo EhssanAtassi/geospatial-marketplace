@@ -1,0 +1,16 @@
+# Plugin-instance settings — keep per-project not in repo
+.claude/*.local.md
+
+# Python build artifacts (in case scripts/ ever gets compiled assets)
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp

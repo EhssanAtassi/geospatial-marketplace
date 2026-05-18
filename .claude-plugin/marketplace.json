@@ -1,0 +1,46 @@
+{
+  "name": "gis-to-db-local",
+  "owner": {
+    "name": "Ehssan Atassi",
+    "email": "ehssan@lodestarsoft.com"
+  },
+  "metadata": {
+    "description": "Local single-plugin marketplace for testing the gis-to-db plugin before publishing.",
+    "version": "0.1.0",
+    "category": "geospatial",
+    "license": "MIT"
+  },
+  "plugins": [
+    {
+      "name": "gis-to-db",
+      "source": ".",
+      "description": "Ingest GIS and CAD files (Shapefile, ESRI File Geodatabase, DWG, DXF) into PostGIS, MongoDB, or MySQL spatial. Scaffold full FastAPI services, generate one-shot CLIs, convert inline, or add a GIS-import feature to an existing app (NestJS / FastAPI / Django / Angular / React / Next.js / Vue).",
+      "version": "0.1.0",
+      "category": "geospatial",
+      "keywords": [
+        "gis",
+        "geospatial",
+        "postgis",
+        "mongodb",
+        "mysql-spatial",
+        "shapefile",
+        "geodatabase",
+        "dwg",
+        "dxf",
+        "python",
+        "fastapi"
+      ],
+      "agents": [
+        "./agents/gis-preflight-validator.md"
+      ],
+      "skills": [
+        "./skills/gis-formats-reference",
+        "./skills/inspect",
+        "./skills/convert",
+        "./skills/make-cli",
+        "./skills/scaffold-service",
+        "./skills/add-module"
+      ]
+    }
+  ]
+}

@@ -26,7 +26,6 @@ from __future__ import annotations
 import argparse
 import json
 import math
-import os
 import re
 import shutil
 import subprocess
@@ -156,26 +155,24 @@ def _dxf_entity_to_geom(entity: Any) -> Any:
 
     dxftype = entity.dxftype()
     if dxftype == "POINT":
-        return Point(entity.dxf.location[0], entity.dxf.location[1])
+        loc = entity.dxf.location
+        return Point(loc.x, loc.y)
     if dxftype == "LINE":
-        return LineString(
-            [
-                (entity.dxf.start[0], entity.dxf.start[1]),
-                (entity.dxf.end[0], entity.dxf.end[1]),
-            ]
-        )
+        start, end = entity.dxf.start, entity.dxf.end
+        return LineString([(start.x, start.y), (end.x, end.y)])
     if dxftype == "LWPOLYLINE":
         points = [(p[0], p[1]) for p in entity.get_points()]
         if entity.closed and len(points) >= 3:
             return Polygon(points)
         return LineString(points) if len(points) >= 2 else None
     if dxftype == "POLYLINE":
-        points = [(v.dxf.location[0], v.dxf.location[1]) for v in entity.vertices]
+        points = [(v.dxf.location.x, v.dxf.location.y) for v in entity.vertices]
         if entity.is_closed and len(points) >= 3:
             return Polygon(points)
         return LineString(points) if len(points) >= 2 else None
     if dxftype == "CIRCLE":
-        cx, cy = entity.dxf.center[0], entity.dxf.center[1]
+        center = entity.dxf.center
+        cx, cy = center.x, center.y
         r = entity.dxf.radius
         points = [
             (cx + r * math.cos(i * 2 * math.pi / 64), cy + r * math.sin(i * 2 * math.pi / 64))
@@ -183,7 +180,8 @@ def _dxf_entity_to_geom(entity: Any) -> Any:
         ]
         return Polygon(points)
     if dxftype == "ARC":
-        cx, cy = entity.dxf.center[0], entity.dxf.center[1]
+        center = entity.dxf.center
+        cx, cy = center.x, center.y
         r = entity.dxf.radius
         start_a = math.radians(entity.dxf.start_angle)
         end_a = math.radians(entity.dxf.end_angle)
@@ -263,6 +261,31 @@ def reproject_geometry(
 
 SAFE_SQL_IDENT = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*$")
 
+# Reserved column names used by the schema. Properties matching these
+# (case-insensitive) are renamed in the output to avoid SQL collisions.
+RESERVED_COLUMNS = {"geom", "geog", "geometry"}
+
+
+def _disambiguate_props(props: dict[str, Any]) -> dict[str, Any]:
+    """Rename any property whose name collides with our reserved schema columns.
+
+    Example: an attribute literally named `geom` in the input becomes `geom_attr`
+    in the SQL output, preventing INSERT INTO t (geom, geom) VALUES (...).
+    """
+    if not any(k.lower() in RESERVED_COLUMNS for k in props):
+        return props
+    renamed: dict[str, Any] = {}
+    for k, v in props.items():
+        if k.lower() in RESERVED_COLUMNS:
+            new_key = f"{k}_attr"
+            # Avoid double-collision if `geom_attr` is also present
+            while new_key in props or new_key in renamed:
+                new_key += "_"
+            renamed[new_key] = v
+        else:
+            renamed[k] = v
+    return renamed
+
 
 def _safe_ident(name: str) -> str:
     """Quote SQL identifiers safely. Plain identifiers are returned unquoted."""
@@ -293,6 +316,8 @@ def format_postgis(
     """Yield PostGIS-flavoured SQL lines."""
     table = _safe_ident(table_name)
     if emit_ddl and attribute_schema is not None:
+        # Disambiguate schema field names that collide with reserved columns.
+        attribute_schema = _disambiguate_props(attribute_schema)
         yield f"-- PostGIS DDL for {table}"
         yield "CREATE EXTENSION IF NOT EXISTS postgis;"
         col_lines = [f"  id BIGSERIAL PRIMARY KEY"]
@@ -307,7 +332,7 @@ def format_postgis(
         yield ""
 
     for feature in features:
-        props = feature["properties"]
+        props = _disambiguate_props(feature["properties"])
         geom_geojson = feature["geometry"]
         if not geom_geojson:
             continue
@@ -327,6 +352,7 @@ def format_mysql(
 ) -> Iterable[str]:
     table = _safe_ident(table_name)
     if emit_ddl and attribute_schema is not None:
+        attribute_schema = _disambiguate_props(attribute_schema)
         yield f"-- MySQL spatial DDL for {table}"
         col_lines = [f"  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY"]
         for fname, ftype in attribute_schema.items():
@@ -340,7 +366,7 @@ def format_mysql(
         yield ""
 
     for feature in features:
-        props = feature["properties"]
+        props = _disambiguate_props(feature["properties"])
         geom_geojson = feature["geometry"]
         if not geom_geojson:
             continue
@@ -371,7 +397,9 @@ def format_mongo(
     yield f"db.{collection_name}.insertMany(["
     first = True
     for feature in features:
-        props = feature["properties"]
+        # MongoDB uses `geometry` as the reserved key — disambiguate any
+        # source attribute named `geometry`, `geom`, or `geog`.
+        props = _disambiguate_props(feature["properties"])
         geom_geojson = feature["geometry"]
         if not geom_geojson:
             continue

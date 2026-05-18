@@ -7,7 +7,7 @@
 # 4326 = WGS84 (lat/lng) — standard for web mapping and MongoDB GeoJSON.
 target_srid: 4326
 
-# Default database target for `convert-inline` and `make-cli`.
+# Default database target for `convert` and `make-cli`.
 # Leave unset to be prompted each time. Allowed: postgis | mongo | mysql.
 default_db_target:
 

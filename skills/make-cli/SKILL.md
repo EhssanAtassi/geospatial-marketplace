@@ -7,6 +7,8 @@ allowed-tools: Bash, Read, Write, Edit, Glob
 
 # Generate a standalone Python CLI for GIS ingestion
 
+> **v0.1 status — design doc with inline generation rubric.** Pre-built templates land in v0.2. In v0.1, Claude generates the CLI from the specs in this SKILL.md inline. Quality is good but slower per invocation than template-based generation.
+
 This skill produces a single-file (or small-package) Python CLI built with Typer. The CLI takes a GIS/CAD file path and a database URI, then ingests features in one shot. No service to deploy — just a tool to run.
 
 ## When to Use

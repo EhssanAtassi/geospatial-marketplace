@@ -1,7 +1,7 @@
 ---
-name: convert-inline
+name: convert
 description: This skill should be used when the user asks to "convert this shapefile to SQL", "show me the MongoDB inserts for this geodatabase", "give me the PostGIS DDL for this DWG", "translate this GIS file to JSON I can paste into Mongo", or invokes `/gis-to-db:convert <file>`. Parses a GIS or CAD file inline using fiona/ezdxf/LibreDWG (host or Docker), then prints ready-to-execute SQL inserts (PostGIS or MySQL spatial) or MongoDB documents directly into the chat. Does NOT write to a database — the user can copy the output, review, and run themselves.
-argument-hint: <path-to-gis-or-cad-file> [--target postgis|mongo|mysql] [--table-name NAME] [--target-srid 4326] [--limit N]
+argument-hint: <path-to-gis-or-cad-file> [--target postgis|mongo|mysql] [--table-name NAME] [--target-srid 4326] [--limit N] [--ddl]
 allowed-tools: Bash, Read, Write, Glob
 ---
 
@@ -29,7 +29,7 @@ The chat output contains, in order:
 
 ## How It Works
 
-1. **Validator agent runs first.** Invoke `gis-preflight-validator` with `mode=convert-inline`. The agent inspects the file, detects CRS, and prompts about reprojection or layer filtering if needed.
+1. **Validator agent runs first.** Invoke `gis-preflight-validator` with `mode=convert`. The agent inspects the file, detects CRS, and prompts about reprojection or layer filtering if needed.
 2. **Resolve target.** If `--target` is missing, ask the user (PostGIS / MongoDB / MySQL) — do NOT silently default. If `default_db_target` is set in `.claude/gis-to-db.local.md`, use that and confirm.
 3. **Run the parser.** Emit `scripts/gis_convert.py` to `/tmp/gis_convert.py` (or mount into Docker), then execute with the file path, target, table name, SRID, and limit.
 4. **Capture output.** The script writes the full output to `/tmp/<table-name>.sql` (or `.js` for MongoDB) AND prints the truncated version to stdout.

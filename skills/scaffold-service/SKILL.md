@@ -7,6 +7,8 @@ allowed-tools: Bash, Read, Write, Edit, Glob
 
 # Scaffold a full FastAPI GIS ingestion service
 
+> **v0.1 status — design doc only.** Pre-built templates land in v0.2 (Slice B). In v0.1, Claude generates files inline from the specs in this SKILL.md — expect 25+ generated files, ~3000-5000 lines. Generation is slower and less consistent than template-based v0.2 will be. For production use today, prefer `make-cli` (lighter) or `convert` (one-shot).
+
 This skill generates a complete, runnable FastAPI service for ingesting GIS and CAD files into a spatial database. The output is production-grade — auth, tests, async jobs, observability, and Docker — not a hello-world.
 
 ## When to Use

@@ -7,6 +7,8 @@ allowed-tools: Bash, Read, Write, Edit, Glob, Grep
 
 # Add a GIS ingestion feature module to an existing app
 
+> **v0.1 status — design doc only.** Pre-built templates land in v0.2 (Slice C). In v0.1, Claude generates the feature module inline from the specs in this SKILL.md. **v0.1 supports only one stack tuple end-to-end: NestJS backend + Angular frontend + PostGIS + Leaflet map preview.** Other backend/frontend/DB/map-library combinations are documented here but require Claude to extrapolate templates — quality varies. For an existing app on a different stack, generate the Python sidecar first via `scaffold-service` and wire the host module manually.
+
 This skill is the headline use case. It takes an existing application — typically a real-estate, government, or utility platform — and adds a complete "upload a GIS or CAD file, parse it, store it, render it on a map" feature. The plugin handles the dual-language nature (Python for GIS, host language for the app) by generating a Python sidecar and wiring the host backend to call it.
 
 ## When to Use

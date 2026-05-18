@@ -1,0 +1,62 @@
+# Built-in starter ruleset: Historic District Overlay
+#
+# An OVERLAY ruleset — applied on top of the parcel's base zoning (R-1, C-1, etc.)
+# Loaded when parcel.properties.overlays contains "historic-district"
+#
+# v0.1 NOTE: permit_check.py v0.1 doesn't yet merge overlays automatically.
+# To use this ruleset standalone: --zone historic-district
+# Overlay merge is planned for v0.2.
+
+name: Historic District Overlay
+jurisdiction: generic-starter
+zone_code: historic-district
+description: >
+  Historic preservation overlay. Restricts demolition, façade changes, and new
+  construction that would harm the district's historic character. Applies in
+  addition to base zoning.
+
+source: "Generic starter overlay. Based loosely on US Secretary of the Interior's Standards for Rehabilitation."
+last_updated: "2026-05-18"
+
+rules:
+  - name: allowed_use
+    type: allowed_values
+    field: use
+    allowed: [residential, commercial, retail, restaurant, office, mixed_use, cultural, museum, gallery]
+    citation: "Historic district: most uses retained, but adaptive reuse encouraged"
+
+  - name: max_height_m
+    type: max
+    field: height_m
+    limit: 12        # tighter than typical base zoning
+    citation: "Historic overlay: max 12m to preserve street wall scale"
+
+  - name: required_material_check
+    type: allowed_values
+    field: facade_material
+    allowed: [stone, brick, plaster, wood, traditional_render]
+    citation: "Historic overlay: traditional façade materials required"
+
+  - name: demolition_request
+    type: allowed_values
+    field: includes_demolition
+    allowed: [false, "no", "partial_with_review"]
+    citation: "Historic overlay: full demolition typically denied; partial demolition requires landmarks review"
+
+  - name: max_facade_alteration_pct
+    type: max
+    field: facade_alteration_pct
+    limit: 30
+    citation: "Historic overlay: ≤30% of façade may be altered without full review"
+
+  - name: window_pattern_preserved
+    type: allowed_values
+    field: window_pattern_change
+    allowed: [false, "no", "minor"]
+    citation: "Historic overlay: original window rhythm + proportions must be retained"
+
+  - name: max_signage_area_sqm
+    type: max
+    field: signage_area_sqm
+    limit: 2
+    citation: "Historic overlay: ≤2 sqm signage to preserve character"

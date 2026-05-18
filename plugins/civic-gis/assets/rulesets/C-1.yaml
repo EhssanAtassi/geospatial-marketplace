@@ -1,0 +1,61 @@
+# Built-in starter ruleset: C-1 Neighborhood Commercial
+#
+# Loaded by /civic-gis:permit-check --jurisdiction <any> --zone C-1
+
+name: C-1 Neighborhood Commercial
+jurisdiction: generic-starter
+zone_code: C-1
+description: Neighborhood-scale commercial — retail, services, small offices. Often mixed-use permitted.
+
+source: "Generic starter ruleset (not jurisdiction-specific)."
+last_updated: "2026-05-18"
+
+rules:
+  - name: allowed_use
+    type: allowed_values
+    field: use
+    allowed: [commercial, retail, office, restaurant, mixed_use, mixed_use_commercial]
+    citation: "C-1 baseline"
+
+  - name: max_height_m
+    type: max
+    field: height_m
+    limit: 15
+    citation: "Common C-1: max 15m"
+
+  - name: max_lot_coverage_pct
+    type: max
+    field: lot_coverage_pct
+    limit: 70
+    citation: "Common C-1: ≤70% lot coverage (denser than residential)"
+
+  - name: max_FAR
+    type: max
+    field: FAR
+    limit: 1.5
+    citation: "Common C-1: ≤1.5 FAR"
+
+  - name: min_setback_front_m
+    type: min
+    field: setback_front_m
+    limit: 0
+    citation: "Common C-1: build-to-line allowed (storefront on sidewalk)"
+
+  - name: min_setback_side_m
+    type: min
+    field: setback_side_m
+    limit: 0
+    citation: "Common C-1: shared walls permitted"
+
+  - name: min_setback_rear_m
+    type: min
+    field: setback_rear_m
+    limit: 3
+    citation: "Common C-1: ≥3m rear (loading/services)"
+
+  - name: min_parking_per_100sqm_commercial
+    type: ratio_min
+    field: parking_spaces
+    denominator: gross_floor_area_sqm
+    ratio: 0.03   # 1 space per 33 m² of commercial area
+    citation: "Common C-1: ≥1 parking space per 33 sqm of commercial floor area"

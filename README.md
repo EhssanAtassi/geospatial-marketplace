@@ -7,10 +7,27 @@ Claude Code plugins for GIS and CAD workflows. Ingest, analyze, and reason about
 ```
 /plugin marketplace add EhssanAtassi/geospatial-marketplace
 /plugin install gis-to-db@geospatial-marketplace
+/plugin install civic-gis@geospatial-marketplace
 /reload-plugins
 ```
 
 ## Plugins
+
+### [civic-gis](./plugins/civic-gis)
+
+GIS toolkit for municipal government and economic development. Compliance checking against zoning, post-conflict reconstruction tracking, cadastral publishing, land-use monitoring, plus **investment-attraction tools** (town profiles, site matching) for small cities and towns. Composes on top of gis-to-db for data primitives; adds civic-domain business logic and rulesets.
+
+**7 skills + 1 pre-flight validator agent:**
+
+| Skill | Purpose |
+|---|---|
+| `civic-gis-reference` | Auto-activating knowledge: zoning, cadastral systems, civic data sources, investment vocab, reconstruction frameworks. |
+| `permit-check` | Score a proposed project against zoning rules. YAML rulesets per jurisdiction; 3 starters bundled (R-1, C-1, historic-district). |
+| `investment-profile` | Generate investor-ready town profile (demographics, infrastructure, available land, incentives) from user-supplied data. |
+| `investment-sites` | Match a proposed investment (industry, size, budget) to suitable parcels in a town's inventory. |
+| `reconstruction-tracker` | Compare pre-event cadastre with post-event survey; classify per-parcel status (intact/damaged/destroyed/rebuilt). |
+| `cadastral-publish` | Generate public-facing cadastre artifacts (searchable map, parcel-extract PDFs, change log). |
+| `landuse-monitor` | Periodic land-use change detection; flag unauthorized changes against master plan. |
 
 ### [gis-to-db](./plugins/gis-to-db)
 

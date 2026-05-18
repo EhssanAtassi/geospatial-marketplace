@@ -1,0 +1,77 @@
+# Built-in starter ruleset: R-1 Single-Family Residential
+#
+# Loaded by /civic-gis:permit-check --jurisdiction <any> --zone R-1
+# (when no jurisdiction-specific override exists)
+#
+# Customize by copying to ~/.claude/civic-gis/rulesets/<your-jurisdiction>/R-1.yaml.
+# Values reflect a typical small-town low-density single-family zone.
+
+name: R-1 Single-Family Residential
+jurisdiction: generic-starter
+zone_code: R-1
+description: Low-density residential, primarily single-family detached homes.
+
+source: "Generic starter ruleset (not jurisdiction-specific). Replace with local zoning code values."
+last_updated: "2026-05-18"
+
+rules:
+  - name: allowed_use
+    type: allowed_values
+    field: use
+    allowed: [residential, single_family, mixed_use_residential]
+    citation: "R-1 baseline"
+
+  - name: max_height_m
+    type: max
+    field: height_m
+    limit: 10
+    citation: "Common R-1: max 10m (≈ 2.5 stories)"
+
+  - name: max_lot_coverage_pct
+    type: max
+    field: lot_coverage_pct
+    limit: 35
+    citation: "Common R-1: ≤35% lot coverage"
+
+  - name: max_FAR
+    type: max
+    field: FAR
+    limit: 0.6
+    citation: "Common R-1: ≤0.6 floor area ratio"
+
+  - name: min_setback_front_m
+    type: min
+    field: setback_front_m
+    limit: 5
+    citation: "Common R-1: ≥5m front setback"
+
+  - name: min_setback_side_m
+    type: min
+    field: setback_side_m
+    limit: 2
+    citation: "Common R-1: ≥2m side setback"
+
+  - name: min_setback_rear_m
+    type: min
+    field: setback_rear_m
+    limit: 3
+    citation: "Common R-1: ≥3m rear setback"
+
+  - name: min_parcel_size_sqm
+    type: min
+    field: parcel_area_sqm
+    limit: 300
+    citation: "Common R-1: ≥300 sqm parcel"
+
+  - name: min_open_space_pct
+    type: min
+    field: open_space_pct
+    limit: 50
+    citation: "Common R-1: ≥50% open space"
+
+  - name: min_parking_per_unit
+    type: ratio_min
+    field: parking_spaces
+    denominator: units
+    ratio: 1
+    citation: "Common R-1: ≥1 parking space per dwelling unit"

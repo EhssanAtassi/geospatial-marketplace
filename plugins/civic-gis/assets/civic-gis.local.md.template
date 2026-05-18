@@ -1,0 +1,49 @@
+---
+# Per-project settings for the civic-gis plugin.
+# Copy this file to `.claude/civic-gis.local.md` in your project root and edit.
+# All fields are optional; sensible defaults are used when omitted.
+
+# Default jurisdiction (when --jurisdiction flag not passed and parcel doesn't carry it).
+default_jurisdiction:           # e.g. "homs-syria"
+
+# Default zone code (rarely set globally; usually inferred per parcel).
+default_zone_code:
+
+# Language for report output.
+language: en                   # en | ar | fr
+
+# Where to find user-supplied custom rulesets.
+# Lookup order: this dir → ~/.claude/civic-gis/rulesets/<jurisdiction>/ → built-in starters
+custom_ruleset_dir:            # e.g. "./permitting/rulesets"
+
+# Data dir for investment-profile (demographics.json, infrastructure.json, etc.)
+investment_data_dir:           # e.g. "./town-data"
+
+# cadastral-publish privacy settings
+cadastral_publish:
+  sensitive_field_patterns:
+    - owner_*
+    - taxpayer_*
+    - purchase_price
+    - tax_value
+    - valuation_*
+    - phone
+    - email
+    - id_number
+    - national_id
+    - internal_*
+    - staff_note*
+    - comment
+  public_owner_names: false    # set true only where owner names are legally public records
+  default_language: en
+
+# reconstruction-tracker defaults
+reconstruction_tracker:
+  default_baseline_year:       # e.g. "2010" for pre-conflict baseline
+  damage_classification_standard: "UN-Habitat"  # or "USAID-OFDA", "EMS-98"
+---
+
+# Project notes (free-form, ignored by the plugin)
+
+Add anything human-readable here — context about the jurisdiction, sources,
+contacts. The plugin only reads the YAML frontmatter above.

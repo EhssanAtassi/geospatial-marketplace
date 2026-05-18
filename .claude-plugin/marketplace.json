@@ -57,6 +57,39 @@
         "./skills/analyze-patterns",
         "./skills/analyze-diff"
       ]
+    },
+    {
+      "name": "civic-gis",
+      "source": "./plugins/civic-gis",
+      "description": "GIS toolkit for municipal government and economic development. Permit / compliance checking against zoning, post-conflict reconstruction tracking, cadastral publishing, land-use change monitoring, plus investment-attraction tools (town profiles, site matching) for small cities and towns. Composes on top of gis-to-db for data primitives; adds civic-domain business logic and rulesets.",
+      "version": "0.1.0",
+      "category": "geospatial",
+      "keywords": [
+        "gis",
+        "civic",
+        "government",
+        "municipal",
+        "compliance",
+        "zoning",
+        "permit",
+        "cadastre",
+        "reconstruction",
+        "investment",
+        "economic-development",
+        "site-suitability"
+      ],
+      "agents": [
+        "./agents/civic-preflight-validator.md"
+      ],
+      "skills": [
+        "./skills/civic-gis-reference",
+        "./skills/investment-profile",
+        "./skills/investment-sites",
+        "./skills/permit-check",
+        "./skills/reconstruction-tracker",
+        "./skills/cadastral-publish",
+        "./skills/landuse-monitor"
+      ]
     }
   ]
 }

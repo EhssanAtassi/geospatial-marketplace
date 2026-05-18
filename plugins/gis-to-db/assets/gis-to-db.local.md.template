@@ -2,6 +2,10 @@
 # Per-project settings for the gis-to-db plugin.
 # Copy this file to `.claude/gis-to-db.local.md` in your project root and edit.
 # All fields are optional; sensible defaults are used when omitted.
+#
+# ⚠ v0.1 KNOWN LIMITATION: the Python scripts in this plugin do NOT yet parse
+# this file. All settings below are aspirational — they document what fields
+# v0.2 will support. For v0.1, pass values via CLI flags on each invocation.
 
 # Default SRID to reproject geometry into before storing.
 # 4326 = WGS84 (lat/lng) — standard for web mapping and MongoDB GeoJSON.

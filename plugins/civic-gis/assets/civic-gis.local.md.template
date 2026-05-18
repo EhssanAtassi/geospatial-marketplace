@@ -2,6 +2,10 @@
 # Per-project settings for the civic-gis plugin.
 # Copy this file to `.claude/civic-gis.local.md` in your project root and edit.
 # All fields are optional; sensible defaults are used when omitted.
+#
+# ⚠ v0.1 KNOWN LIMITATION: the Python scripts in this plugin do NOT yet parse
+# this file. All settings below are aspirational — they document what fields
+# v0.2 will support. For v0.1, pass values via CLI flags on each invocation.
 
 # Default jurisdiction (when --jurisdiction flag not passed and parcel doesn't carry it).
 default_jurisdiction:           # e.g. "homs-syria"

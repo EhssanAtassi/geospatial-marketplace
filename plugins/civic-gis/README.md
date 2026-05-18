@@ -80,6 +80,8 @@ Most civic-gis skills delegate to `gis-to-db` primitives rather than reimplement
 
 Per-project settings live in `.claude/civic-gis.local.md`. Copy `assets/civic-gis.local.md.template` to bootstrap. All fields optional. Configurable: default jurisdiction, custom ruleset paths, language (en/ar/fr), `cadastral-publish` privacy filters, `reconstruction-tracker` baseline year + damage standard.
 
+> ⚠ **v0.1 known limitation**: the Python scripts do NOT yet parse this settings file. The template documents what v0.2 will support. For v0.1, pass values via CLI flags on each invocation (`--jurisdiction`, `--ruleset-dir`, `--language`, etc.). The `civic-preflight-validator` agent reads the file for some checks.
+
 ## Custom rulesets
 
 `permit-check` looks for rulesets in this order:
@@ -105,6 +107,7 @@ To codify your municipality's actual zoning code, drop a YAML following the sche
 - Variance prediction (which rules typically grant variances vs not).
 - Notification hooks on `landuse-monitor` violations.
 - Multi-language ruleset translations.
+- **Settings parsing**: scripts read `.claude/civic-gis.local.md` for project defaults (jurisdiction, ruleset_dir, language, privacy filters, reconstruction baseline year).
 
 ## License
 

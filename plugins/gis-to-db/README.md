@@ -94,12 +94,15 @@ The validator agent reports missing dependencies and recommends a path forward.
 
 Per-project settings live in `.claude/gis-to-db.local.md`. Copy `assets/gis-to-db.local.md.template` to bootstrap. All fields are optional. Configurable: DB URIs, target SRID, Docker image, DWG defaults (source CRS, layer filter, entity types).
 
+> ⚠ **v0.1 known limitation**: the Python scripts do NOT yet parse this settings file. The template documents what v0.2 will support. For v0.1, pass values via CLI flags on each invocation. The validator agent does read this file for some checks.
+
 ## v0.2 roadmap
 
 - Full template-based generators for `make-cli`, `scaffold-service`, `add-module`.
 - Real OSM Overpass + SRTM DEM fetchers for `analyze-site` (currently placeholders).
 - Slope analysis on DEM (currently a 50/100 neutral placeholder).
 - Bulk-mode `--limit 0` for streaming huge files in `convert`.
+- **Settings parsing**: scripts read `.claude/gis-to-db.local.md` for project defaults (DB URIs, target SRID, Docker image, DWG defaults).
 
 ## License
 

@@ -1,48 +1,68 @@
-# gis-to-db
+# Geospatial Marketplace
 
-Ingest GIS and CAD files (Shapefile, ESRI File Geodatabase, DWG, DXF) into PostGIS, MongoDB, or MySQL spatial — via Claude Code skills.
+Claude Code plugins for GIS and CAD workflows. Ingest, analyze, and reason about spatial data.
 
-## What this plugin does
+## Install
 
-`gis-to-db` is a Claude Code plugin that turns the often-painful "I have a GIS file, get it into the database" problem into a guided, repeatable workflow. It targets four delivery shapes:
+```
+/plugin marketplace add EhssanAtassi/geospatial-marketplace
+/plugin install gis-to-db@geospatial-marketplace
+/reload-plugins
+```
 
-| Skill | What it does |
+## Plugins
+
+### [gis-to-db](./plugins/gis-to-db)
+
+Ingest GIS and CAD files (Shapefile, ESRI File Geodatabase, DWG, DXF) into PostGIS, MongoDB, or MySQL spatial. Scaffold full FastAPI services, generate one-shot CLIs, convert inline, or add a GIS-import feature to an existing app. Includes site-suitability analysis, descriptive statistics, spatial clustering, and before/after diff for GIS datasets.
+
+**10 skills + 1 pre-flight validator agent:**
+
+| Skill | Purpose |
 |---|---|
-| `/gis-to-db:inspect <file>` | Describe a file's contents (format, CRS, layers, geometry types, feature count, sample attributes) — read-only. |
-| `/gis-to-db:convert <file> --target <db>` | Parse the file and print ready-to-execute SQL inserts or MongoDB documents directly in chat. |
-| `/gis-to-db:make-cli` | Generate a standalone Python CLI (Typer + geopandas) that you run per file. |
-| `/gis-to-db:scaffold-service` | Generate a complete FastAPI ingestion service (auth, async jobs, Pytest, Prometheus, Docker). |
-| `/gis-to-db:add-module` | Drop a GIS-import feature into your existing NestJS / FastAPI / Django / Angular / React / Next.js / Vue app. |
+| `gis-formats-reference` | Auto-activating knowledge: formats, CRS, PostGIS, MongoDB, MySQL spatial, GDAL toolbox, real-estate / government / utility / environmental / survey vocabulary. |
+| `inspect` | Describe a GIS/CAD file's contents (layers, CRS, geometry, feature count, sample features). Read-only. |
+| `convert` | Parse a GIS/CAD file inline and emit PostGIS / MySQL INSERTs or MongoDB documents in chat. |
+| `make-cli` | Generate a standalone Python CLI (Typer + geopandas) for per-file ingestion. |
+| `scaffold-service` | Generate a production-grade FastAPI ingestion service (API key auth, Arq async jobs, Pytest, Prometheus, Docker). |
+| `add-module` | Drop a GIS-import feature into an existing NestJS / FastAPI / Django / Angular / React / Next.js / Vue app. |
+| `analyze-site` | Rule-based site suitability scoring. 4 built-in purpose rulesets (airport, residential, commercial, public-facility) plus user-supplied custom YAML. |
+| `analyze-stats` | Descriptive statistics for a single layer (distributions, geometry validity, duplicates, outliers). |
+| `analyze-patterns` | Spatial pattern analysis for point data (DBSCAN clustering, Clark-Evans nearest-neighbor ratio). |
+| `analyze-diff` | Before/after comparison of two GIS layers (added/removed/changed features). |
 
-Plus an auto-activating reference skill (`gis-formats-reference`) that informs Claude's answers about file formats, CRS, and spatial-DB features without any command needed.
+#### Supported inputs
 
-## Supported inputs
+- Shapefile (`.shp` + `.dbf` + `.shx`)
+- ESRI File Geodatabase (`.gdb/` directory)
+- AutoCAD DWG (via LibreDWG → DXF → ezdxf pipeline)
+- AutoCAD DXF
+- GeoJSON, KML/KMZ, GeoPackage
 
-- **Shapefile** (`.shp` + `.dbf` + `.shx` + `.prj`)
-- **ESRI File Geodatabase** (`.gdb/` directory)
-- **AutoCAD DWG** (via LibreDWG → DXF → ezdxf pipeline)
-- **AutoCAD DXF** (via ezdxf)
+#### Supported database targets
 
-## Supported database targets
+- PostgreSQL + PostGIS — geometry/geography columns, GIST indexes
+- MongoDB — embedded GeoJSON + 2dsphere indexes
+- MySQL 8 spatial — SRID-aware spatial types, R-tree indexes
 
-- **PostgreSQL + PostGIS** — geometry/geography columns, GIST indexes.
-- **MongoDB** — embedded GeoJSON + 2dsphere indexes.
-- **MySQL 8 spatial** — SRID-aware spatial types, R-tree indexes.
+#### Prerequisites
 
-## Prerequisites
+- Claude Code (any recent version)
+- Either a host Python install with `pip install fiona geopandas ezdxf shapely pyproj scikit-learn pyyaml` + `apt-get install gdal-bin libgdal-dev libredwg-tools`, **or** Docker available locally (the plugin uses `osgeo/gdal:ubuntu-small-3.8.0`).
 
-- Claude Code (any recent version).
-- One of:
-  - Host install of Python 3.12 + `pip install fiona geopandas ezdxf` + `apt-get install gdal-bin libgdal-dev libredwg-tools`.
-  - **Recommended**: Docker available locally — the plugin uses `osgeo/gdal:ubuntu-small-3.8.0` for parsing, so no host install needed.
+## Roadmap
 
-## Configuration
+This marketplace will grow over time with adjacent plugins:
 
-Per-project settings live in `.claude/gis-to-db.local.md`. Copy `assets/gis-to-db.local.md.template` from this plugin to bootstrap. All fields are optional.
+- **raster-toolkit** (planned) — work with GeoTIFF, NetCDF, raster band math, cloud-optimized GeoTIFFs.
+- **geocode** (planned) — address → coordinates and reverse, batch geocoding pipelines.
+- **routing** (planned) — shortest path, isochrones, drive-time bands, vehicle routing.
+
+Open an issue if you have a spatial-data workflow you'd like to see automated.
 
 ## Status
 
-**v0.1.0** — initial release. Local-only; not yet published to a marketplace.
+**v0.1.0** — first release. The `gis-to-db` plugin ships with 3 fully-implemented skills (`gis-formats-reference`, `inspect`, `convert`) plus 4 analysis skills, 3 skeleton skills (`make-cli`, `scaffold-service`, `add-module`) that declare their v0.1 status inline, and the pre-flight validator agent.
 
 ## License
 

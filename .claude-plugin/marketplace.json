@@ -1,14 +1,24 @@
 {
-  "name": "gis-to-db-local",
+  "name": "geospatial-marketplace",
   "owner": {
     "name": "Ehssan Atassi",
-    "email": "ehssan@lodestarsoft.com"
+    "email": "ehssan@lodestarsoft.com",
+    "url": "https://github.com/EhssanAtassi"
   },
   "metadata": {
-    "description": "Local single-plugin marketplace for testing the gis-to-db plugin before publishing.",
+    "description": "Geospatial Marketplace — Claude Code plugins for GIS and CAD workflows. Ingest, analyze, and reason about spatial data. Currently ships the gis-to-db plugin; more spatial plugins planned.",
     "version": "0.1.0",
     "category": "geospatial",
-    "license": "MIT"
+    "license": "MIT",
+    "homepage": "https://github.com/EhssanAtassi/geospatial-marketplace",
+    "repository": "https://github.com/EhssanAtassi/geospatial-marketplace",
+    "keywords": [
+      "gis",
+      "geospatial",
+      "spatial-data",
+      "claude-code",
+      "marketplace"
+    ]
   },
   "plugins": [
     {
